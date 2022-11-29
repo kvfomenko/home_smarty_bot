@@ -56,7 +56,7 @@ async function sendMessageToAll(text) {
 
 var global_error = false;
 var prev = {level:0, status:false, init:false};
-var prev_state;
+var prev_state = prev;
 
 async function refresh_battery_state() {
     if (!global_error) {
@@ -99,7 +99,7 @@ async function start_battery_monitor(){
 async function init() {
     if (!termuxapi.hasTermux) {
         console.log('termux module not found');
-        process.exit(1);
+        //process.exit(1);
     }
 
     await app_state.init();
