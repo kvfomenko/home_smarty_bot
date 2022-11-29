@@ -108,9 +108,12 @@ async function refresh_battery_state() {
                             console.log('Питание ДТЭК отключено')
                         }
                     }
-                    prev = {status: bat.status, level: bat.percentage, init: true};
+                    prev = {status: bat.status, init: true};
                 }
-
+                if (prev.level !== bat.percentage) {
+                    console.log('Level:' || bat.percentage);
+                    prev.level = bat.percentage;
+                }
             })
             .catch(function (e) {
                 global_error = true;
