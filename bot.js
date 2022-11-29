@@ -80,10 +80,10 @@ async function start_bot() {
 }
 
 async function sendMessageToAll(text) {
-    await bot.sendMessage('313404677', text);
+    //await bot.sendMessage('313404677', text);
 
     for (let chat_id in app_state.state.subscribers) {
-    //    await bot.sendMessage(chat_id, text);
+        await bot.sendMessage(chat_id, text);
     }
 }
 
