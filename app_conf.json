@@ -11,5 +11,6 @@
 		},
 		"url": "https://t.me/Home_Smarty_bot"
 	},
-	"app_state_file_path": "./microdb.json"
+	"app_state_file_path": "./microdb.json",
+	"refresh_battery_state_interval": 3000
 }

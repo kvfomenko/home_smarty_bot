@@ -96,7 +96,7 @@ async function refresh_battery_state() {
             .run()
             .then(function (obj) {
                 let bat = obj;
-                console.log('refresh_battery_state ', bat.status, bat.percentage)
+                //console.log('refresh_battery_state ', bat.status, bat.percentage)
 
                 if (prev.status !== bat.status) {
                     if (prev.init) {
@@ -121,13 +121,13 @@ async function refresh_battery_state() {
 }
 
 async function start_battery_monitor(){
-    setInterval(refresh_battery_state, 3000);
+    setInterval(refresh_battery_state, conf.refresh_battery_state_interval);
 }
 
 async function init() {
     if (!termuxapi.hasTermux) {
         console.log('termux module not found');
-        //process.exit(1);
+        process.exit(1);
     }
 
     await app_state.init();
