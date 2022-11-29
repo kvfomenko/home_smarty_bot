@@ -88,7 +88,7 @@ async function sendMessageToAll(text) {
 }
 
 var global_error = false;
-var prev = {level:null, status:null, init:false};
+var prev = {level:0, status:false, init:false};
 
 async function refresh_battery_state() {
     if (!global_error) {
@@ -96,7 +96,7 @@ async function refresh_battery_state() {
             .run()
             .then(function (obj) {
                 let bat = obj;
-                //console.log('refresh_battery_state ', bat.status, bat.percentage)
+                console.log('refresh_battery_state ', bat.status, bat.percentage)
 
                 if (prev.status !== bat.status) {
                     if (prev.init) {
