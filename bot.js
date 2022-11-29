@@ -34,10 +34,9 @@ async function start_bot() {
             if (/\/start/.test(msg.text)) {
                 console.log('start ' + msg.chat.id + ' ' + msg.from.first_name);
                 await add_subscriber(msg);
-                //await bot.sendMessage(msg.chat.id, 'Для авторизации сообщите нам свой номер телефона', send_contact_option);
 
-            //} else if (/^\/help/.test(msg.text)) {
-            //    await bot.sendMessage(msg.chat.id, conf.help_answer);
+            } else if (/^\/status/.test(msg.text)) {
+                await bot.sendMessage(msg.chat.id, prev_state);
 
             } else {
                 //console.log('unknown command from ' + msg.from.first_name + ': ' + msg.text);
@@ -45,38 +44,6 @@ async function start_bot() {
         }
 
     });
-
-    bot.on('contact', async (msg) => {
-        if (msg.contact.user_id === msg.from.id) {
-            console.log('current user contact received ' + msg.contact.first_name + ' ' + msg.contact.phone_number);
-            await add_subscriber(msg);
-            await bot.sendMessage(msg.chat.id, `${msg.contact.first_name}, Вы успешно авторизовались. Теперь вы можете отправить мне свои пожелания (+автомобиль/-автомобиль) или узнать пожелания ваших контактов, для этого просто отправьте мне любой контакт`);
-        } else {
-            console.log('VCARD contact received ' + msg.contact.phone_number);
-            let card = vCard.parse(msg.contact.vcard);
-            for (let i=0; i<card.tel.length; i++) {
-                if (card.tel[i].value.substring(0,1) === '+') {
-                    card.tel[i].value = card.tel[i].value.substring(1);
-                }
-                console.log('VCARD tel ' + (i+1) + ': ' + card.tel[i].value);
-                if (app_state.state.wishes[card.tel[i].value] &&
-                    app_state.state.wishes[card.tel[i].value].length > 0) {
-                    let wishes = '';
-                    console.log('WISHES COUNT ' + app_state.state.wishes[card.tel[i].value].length);
-
-                    for (let j=0; j < app_state.state.wishes[card.tel[i].value].length; j++) {
-                        wishes = wishes + (j+1) + ' ' + app_state.state.wishes[card.tel[i].value][j] + '\n';
-                        //console.log('iii ' + j);
-                    }
-                    await bot.sendMessage(msg.chat.id, 'Пожелания по номеру ' + card.tel[i].value + ':\n' + wishes);
-                } else {
-                    await bot.sendMessage(msg.chat.id, 'Пожелания по номеру ' + card.tel[i].value + ' отсутствуют');
-                }
-            }
-        }
-
-    });
-
 }
 
 async function sendMessageToAll(text) {
@@ -89,6 +56,7 @@ async function sendMessageToAll(text) {
 
 var global_error = false;
 var prev = {level:0, status:false, init:false};
+var prev_state;
 
 async function refresh_battery_state() {
     if (!global_error) {
@@ -96,11 +64,12 @@ async function refresh_battery_state() {
             .run()
             .then(function (obj) {
                 let bat = obj;
+                prev_state = bat;
                 //console.log('refresh_battery_state ', bat.status, bat.percentage);
 
                 if (prev.status !== bat.status) {
                     if (prev.init) {
-                        if (bat.status === 'CHARGING') {
+                        if (bat.status === 'CHARGING' || bat.status === 'FULL') {
                             sendMessageToAll('Питание ДТЭК восстановлено')
                             console.log('Питание ДТЭК восстановлено')
                         } else {
