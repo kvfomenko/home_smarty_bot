@@ -1,0 +1,14 @@
+{
+	"bot": {
+		"token": "",
+		"name": "Home Smarty Bot",
+		"polling": {
+			"interval": 500,
+			"autoStart": true,
+			"params": {
+				"timeout": 10
+			}
+		},
+		"url": "https://t.me/Home_Smarty_bot"
+	}
+}
