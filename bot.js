@@ -36,7 +36,7 @@ async function start_bot() {
                 await add_subscriber(msg);
 
             } else if (/^\/status/.test(msg.text)) {
-                await bot.sendMessage(msg.chat.id, prev_state);
+                await bot.sendMessage(msg.chat.id, JSON.stringify(prev_state));
 
             } else {
                 //console.log('unknown command from ' + msg.from.first_name + ': ' + msg.text);
