@@ -99,7 +99,7 @@ async function start_battery_monitor(){
 async function init() {
     if (!termuxapi.hasTermux) {
         console.log('termux module not found');
-        //process.exit(1);
+        process.exit(1);
     }
 
     await app_state.init();
