@@ -96,7 +96,7 @@ async function refresh_battery_state() {
             .run()
             .then(function (obj) {
                 let bat = obj;
-                console.log('refresh_battery_state ', bat.status, bat.percentage)
+                //console.log('refresh_battery_state ', bat.status, bat.percentage);
 
                 if (prev.status !== bat.status) {
                     if (prev.init) {
@@ -111,7 +111,7 @@ async function refresh_battery_state() {
                     prev = {status: bat.status, init: true};
                 }
                 if (prev.level !== bat.percentage) {
-                    console.log('Level:' || bat.percentage);
+                    console.log('Level:' + bat.percentage);
                     prev.level = bat.percentage;
                 }
             })
