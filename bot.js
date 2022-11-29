@@ -14,17 +14,7 @@ async function add_subscriber(msg) {
     console.log('in add_subscriber: ' + JSON.stringify(msg));
 
     if (!app_state.state.subscribers[msg.chat.id]) {
-        app_state.state.subscribers[msg.chat.id] = {
-            phone_number: msg.contact.phone_number,
-            first_name: msg.from.first_name,
-            subscribe_time: util.getFormattedDateTime()
-        };
-    } else {
-        app_state.state.subscribers[msg.chat.id].phone_number = msg.contact.phone_number;
-    }
-
-    if (!app_state.state.wishes[msg.contact.phone_number]) {
-        app_state.state.wishes[msg.contact.phone_number] = [];
+        app_state.state.subscribers[msg.chat.id] = {subscribe_time: util.getFormattedDateTime()};
     }
     await app_state.save();
 }
@@ -41,29 +31,13 @@ async function start_bot() {
         if (msg.chat.type === 'private' || (msg.text && msg.text.indexOf('@'+conf.bot.name) >= 0)) {
             //console.log('on message(' + msg.text + ') ' + JSON.stringify(msg));
 
-            if (/^\+/.test(msg.text)) {
-                console.log('added ' + msg.chat.id + ' owner:' + msg.from.first_name + ' wish:' + msg.text);
-                await add_wish(msg);
-                //await bot.sendMessage(msg.chat.id, app_state.state.cache_data.last_by_day, {parse_mode: 'HTML'});
-
-            } else if (/^--/.test(msg.text)) {
-                console.log('removed all ' + msg.chat.id + ' owner:' + msg.from.first_name + ' wish:' + msg.text);
-                await del_wish_all(msg);
-
-            } else if (/^-/.test(msg.text)) {
-                console.log('removed ' + msg.chat.id + ' owner:' + msg.from.first_name + ' wish:' + msg.text);
-                await del_wish(msg);
-
-            } else if (/^\/list/.test(msg.text)) {
-                console.log('list ' + msg.chat.id + ' owner:' + msg.from.first_name);
-                await list(msg);
-
-            } else if (/\/start/.test(msg.text)) {
+            if (/\/start/.test(msg.text)) {
                 console.log('start ' + msg.chat.id + ' ' + msg.from.first_name);
-                await bot.sendMessage(msg.chat.id, 'Для авторизации сообщите нам свой номер телефона', send_contact_option);
+                await add_subscriber(msg);
+                //await bot.sendMessage(msg.chat.id, 'Для авторизации сообщите нам свой номер телефона', send_contact_option);
 
-            } else if (/^\/help/.test(msg.text)) {
-                await bot.sendMessage(msg.chat.id, conf.help_answer);
+            //} else if (/^\/help/.test(msg.text)) {
+            //    await bot.sendMessage(msg.chat.id, conf.help_answer);
 
             } else {
                 //console.log('unknown command from ' + msg.from.first_name + ': ' + msg.text);
@@ -113,29 +87,37 @@ async function sendMessageToAll(text) {
     }
 }
 
+var global_error = false;
 var prev = {level:null, status:null, init:false};
 
 async function refresh_battery_state() {
-    termuxapi.batteryStatus()
-        .run()
-        .then(function (obj) {
-            let bat = obj;
-            console.log('refresh_battery_state ', bat.status, bat.percentage)
+    if (!global_error) {
+        termuxapi.batteryStatus()
+            .run()
+            .then(function (obj) {
+                let bat = obj;
+                console.log('refresh_battery_state ', bat.status, bat.percentage)
 
-            if (prev.status !== bat.status) {
-                if (prev.init) {
-                    if (bat.status === 'CHARGING') {
-                        sendMessageToAll('Питание ДТЭК восстановлено')
-                        console.log('Питание ДТЭК восстановлено')
-                    } else {
-                        sendMessageToAll('Питание ДТЭК отключено')
-                        console.log('Питание ДТЭК отключено')
+                if (prev.status !== bat.status) {
+                    if (prev.init) {
+                        if (bat.status === 'CHARGING') {
+                            sendMessageToAll('Питание ДТЭК восстановлено')
+                            console.log('Питание ДТЭК восстановлено')
+                        } else {
+                            sendMessageToAll('Питание ДТЭК отключено')
+                            console.log('Питание ДТЭК отключено')
+                        }
                     }
+                    prev = {status: bat.status, level: bat.percentage, init: true};
                 }
-                prev = {status: bat.status, level: bat.percentage, init: true};
-            }
 
-        })
+            })
+            .catch(function (e) {
+                global_error = true;
+                console.log('error:', e);
+                process.exit(1);
+            });
+    }
 }
 
 async function start_battery_monitor(){
@@ -145,7 +127,7 @@ async function start_battery_monitor(){
 async function init() {
     if (!termuxapi.hasTermux) {
         console.log('termux module not found');
-        process.exit(1);
+        //process.exit(1);
     }
 
     await app_state.init();
