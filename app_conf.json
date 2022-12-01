@@ -3,10 +3,10 @@
 		"token": "",
 		"name": "Home Smarty Bot",
 		"polling": {
-			"interval": 500,
+			"interval": 2000,
 			"autoStart": true,
 			"params": {
-				"timeout": 10
+				"timeout": 50
 			}
 		},
 		"url": "https://t.me/Home_Smarty_bot"

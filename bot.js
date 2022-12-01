@@ -36,10 +36,13 @@ async function start_bot() {
                 await add_subscriber(msg);
 
             } else if (/^\/status/.test(msg.text)) {
-                await bot.sendMessage(msg.chat.id, JSON.stringify(prev_state));
-
+                try {
+                    await bot.sendMessage(msg.chat.id, JSON.stringify(prev_state));
+                } catch (e) {
+                    console.error('error in sendMessage:', e);
+                }
             } else {
-                //console.log('unknown command from ' + msg.from.first_name + ': ' + msg.text);
+                //console.error('unknown command from ' + msg.from.first_name + ': ' + msg.text);
             }
         }
 
@@ -47,10 +50,14 @@ async function start_bot() {
 }
 
 async function sendMessageToAll(text) {
-    //await bot.sendMessage('313404677', text);
+    try {
+        await bot.sendMessage('313404677', text);
 
-    for (let chat_id in app_state.state.subscribers) {
-        await bot.sendMessage(chat_id, text);
+        for (let chat_id in app_state.state.subscribers) {
+            //await bot.sendMessage(chat_id, text);
+        }
+    } catch (e) {
+        console.error('error in sendMessageToAll:', e);
     }
 }
 
@@ -64,12 +71,16 @@ async function refresh_battery_state() {
             .run()
             .then(function (obj) {
                 let bat = obj;
+                if (bat.status === 'FULL') {
+                    bat.status = 'CHARGING';
+                }
+
                 prev_state = bat;
                 //console.log('refresh_battery_state ', bat.status, bat.percentage);
 
                 if (prev.status !== bat.status) {
                     if (prev.init) {
-                        if (bat.status === 'CHARGING' || bat.status === 'FULL') {
+                        if (bat.status === 'CHARGING') {
                             sendMessageToAll('Питание ДТЭК восстановлено')
                             console.log('Питание ДТЭК восстановлено')
                         } else {
@@ -86,7 +97,7 @@ async function refresh_battery_state() {
             })
             .catch(function (e) {
                 global_error = true;
-                console.log('error:', e);
+                console.error('error in refresh_battery_state:', e);
                 process.exit(1);
             });
     }
@@ -98,7 +109,7 @@ async function start_battery_monitor(){
 
 async function init() {
     if (!termuxapi.hasTermux) {
-        console.log('termux module not found');
+        console.error('termux module not found');
         process.exit(1);
     }
 
