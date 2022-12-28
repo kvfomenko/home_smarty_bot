@@ -84,7 +84,7 @@ async function refresh_battery_state() {
                             sendMessageToAll('Питание ДТЭК восстановлено')
                             console.log('Питание ДТЭК восстановлено')
                         } else {
-                            sendMessageToAll('Питание ДТЭК отключено')
+                            //sendMessageToAll('Питание ДТЭК отключено')
                             console.log('Питание ДТЭК отключено')
                         }
                     }
