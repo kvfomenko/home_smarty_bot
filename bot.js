@@ -20,11 +20,20 @@ async function add_subscriber(msg) {
 }
 
 
-
 async function start_bot() {
+    if (bot) {
+        console.log('bot ' + conf.bot.name + ' detaching...');
+        bot.detach();
+        bot = null;
+    }
     bot = new TelegramBot(conf.bot.token, {polling: conf.bot.polling});
-    console.log('bot ' + conf.bot.name + ' started...');
+    console.log('bot ' + conf.bot.name + ' RE-started...');
     let rows;
+
+    bot.on("polling_error", async (msg) => {
+        console.log('polling_error:' + msg);
+        setTimeout(start_bot, 2000);
+    });
 
     bot.on('message', async (msg) => {
         console.log('msg ' + JSON.stringify(msg));
