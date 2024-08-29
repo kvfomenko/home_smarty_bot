@@ -21,18 +21,35 @@ async function add_subscriber(msg) {
 
 
 async function start_bot() {
+    global_error = false;
+
+/*
     if (bot) {
-        console.log('bot ' + conf.bot.name + ' detaching...');
-        bot.detach();
+        console.log('bot ' + conf.bot.name + ' stopping...');
+        await bot.stopPolling({
+            cancel: true,
+            reason: 'stopping'
+        });
+
         bot = null;
     }
-    bot = new TelegramBot(conf.bot.token, {polling: conf.bot.polling});
-    console.log('bot ' + conf.bot.name + ' RE-started...');
-    let rows;
+*/
 
-    bot.on("polling_error", async (msg) => {
-        console.log('polling_error:' + msg);
-        setTimeout(start_bot, 2000);
+    console.log('bot ' + conf.bot.name + ' starting...');
+    bot = new TelegramBot(conf.bot.token, {polling: conf.bot.polling});
+    console.log('bot ' + conf.bot.name + ' started...');
+    let rows;``
+
+    bot.on("polling_error", async (error) => {
+        console.log('EXITING after polling_error:' + error);
+        process.exit(1);
+        //setTimeout(start_bot, 3000);
+    });
+
+    bot.on('webhook_error', async (error) => {
+        console.log('EXITING after webhook_error:' + error);
+        process.exit(1);
+        //setTimeout(start_bot, 3000);
     });
 
     bot.on('message', async (msg) => {
@@ -60,10 +77,10 @@ async function start_bot() {
 
 async function sendMessageToAll(text) {
     try {
-        await bot.sendMessage('313404677', text);
+        //await bot.sendMessage('313404677', text);
 
         for (let chat_id in app_state.state.subscribers) {
-            //await bot.sendMessage(chat_id, text);
+            await bot.sendMessage(chat_id, text);
         }
     } catch (e) {
         console.error('error in sendMessageToAll:', e);
@@ -130,4 +147,8 @@ async function init() {
 
 init();
 
+process.on('uncaughtException', function (err) {
+    util.log('uncaughtException:' + err.message + ' ' + util.safeStringify(err.stack));
+    //process.exit(1);
+})
 
